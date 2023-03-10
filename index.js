@@ -49,6 +49,23 @@ client.on('ready', () => {
             adapterCreator: channel.guild.voiceAdapterCreator,
         });
         connection.subscribe(player);
+
+        // v5
+        player.on('connectionCreate', (queue) => {
+            connection.on('stateChange', (oldState, newState) => {
+                const oldNetworking = Reflect.get(oldState, 'networking');
+                const newNetworking = Reflect.get(newState, 'networking');
+        
+                const networkStateChangeHandler = (oldNetworkState, newNetworkState) => {
+                const newUdp = Reflect.get(newNetworkState, 'udp');
+                    clearInterval(newUdp?.keepAliveInterval);
+                }
+        
+                oldNetworking?.off('stateChange', networkStateChangeHandler);
+                newNetworking?.on('stateChange', networkStateChangeHandler);
+            });
+        });
+        
         try {
             await entersState(connection, VoiceConnectionStatus.Ready, 2_000);
             return connection;
