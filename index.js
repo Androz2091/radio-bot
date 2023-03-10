@@ -42,7 +42,7 @@ client.on('ready', () => {
     attachRecorder();
 
     setTimeout(async () => {
-        const channel = client.channels.cache.get(process.env.DISCORD_CHANNEL_ID);
+        const channel = await client.channels.fetch(process.env.DISCORD_CHANNEL_ID);
         const connection = joinVoiceChannel({
             channelId: channel.id,
             guildId: channel.guild.id,
