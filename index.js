@@ -60,9 +60,9 @@ client.on('ready', () => {
 });
 
 function attachRecorder() {
-	player.play(
-		createAudioResource(process.env.RADIO_STREAM),
-	);
+    const resource = createAudioResource(process.env.RADIO_STREAM, { inlineVolume: true });
+    resource.volume.setVolume(process.env.RADIO_VOLUME || 1);
+    player.play(resource);
 	console.log('Attached recorder - ready to go!');
 }
 
