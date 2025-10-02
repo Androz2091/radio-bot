@@ -27,6 +27,28 @@ const player = createAudioPlayer({
 	},
 });
 
+// Minimal fatal error helper and process-level handlers so PM2 will restart the bot on crashes
+function fatalError(err, context) {
+	try {
+		const ctx = context ? `[${context}]` : '[fatal]';
+		if (err instanceof Error) {
+			console.error(`${ctx} ${err.stack || err.message}`);
+		} else {
+			console.error(`${ctx}`, err);
+		}
+	} catch (loggingError) {
+		console.error('[fatal][loggingError]', loggingError);
+	}
+	setTimeout(() => process.exit(1), 100);
+}
+
+process.on('uncaughtException', (err) => fatalError(err, 'uncaughtException'));
+process.on('unhandledRejection', (reason) => fatalError(reason, 'unhandledRejection'));
+
+// Attach minimal library-level handlers
+client.on('error', (err) => fatalError(err, 'discord client error'));
+player.on('error', (err) => fatalError(err, 'audio player error'));
+
 player.on('stateChange', (oldState, newState) => {
 	if (oldState.status === AudioPlayerStatus.Idle && newState.status === AudioPlayerStatus.Playing) {
 		console.log('Playing audio output on audio player');
@@ -48,6 +70,9 @@ client.on('ready', () => {
             guildId: channel.guild.id,
             adapterCreator: channel.guild.voiceAdapterCreator,
         });
+
+        // Minimal: ensure voice connection errors cause process exit so PM2 restarts
+        connection.on('error', (err) => fatalError(err, 'voice connection error'));
 	
 	connection.on('stateChange', (oldState, newState) => {
 	    const oldNetworking = Reflect.get(oldState, 'networking');
