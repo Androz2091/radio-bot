@@ -73,20 +73,20 @@ client.on('ready', () => {
 
         // Minimal: ensure voice connection errors cause process exit so PM2 restarts
         connection.on('error', (err) => fatalError(err, 'voice connection error'));
-
+	
 	connection.on('stateChange', (oldState, newState) => {
-		const oldNetworking = Reflect.get(oldState, 'networking');
-		const newNetworking = Reflect.get(newState, 'networking');
+	    const oldNetworking = Reflect.get(oldState, 'networking');
+	    const newNetworking = Reflect.get(newState, 'networking');
 
-		const networkStateChangeHandler = (oldNetworkState, newNetworkState) => {
-			const newUdp = Reflect.get(newNetworkState, 'udp');
-			clearInterval(newUdp?.keepAliveInterval);
-		};
+	    const networkStateChangeHandler = (oldNetworkState, newNetworkState) => {
+	        const newUdp = Reflect.get(newNetworkState, 'udp');
+	        clearInterval(newUdp?.keepAliveInterval);
+	    };
 
-		oldNetworking?.off('stateChange', networkStateChangeHandler);
-		newNetworking?.on('stateChange', networkStateChangeHandler);
+	    oldNetworking?.off('stateChange', networkStateChangeHandler);
+	    newNetworking?.on('stateChange', networkStateChangeHandler);
 	});
-		
+	
         connection.subscribe(player);
         
         try {
